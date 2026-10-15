@@ -1,6 +1,6 @@
 # chat-ui (working name)
 
-Chat UI that runs entirely in your browser, for vLLM and other OpenAI-compatible servers. No backend, no install, nothing stored.
+Chat UI that runs entirely in your browser, for vLLM and other OpenAI-compatible servers. No backend, no install, nothing private stored.
 
 Everything is in `index.html` (marked, DOMPurify and highlight.js are loaded from cdnjs, pinned with SRI hashes; system fonts, no web fonts). No build step.
 
@@ -9,13 +9,14 @@ Everything is in `index.html` (marked, DOMPurify and highlight.js are loaded fro
 - Streaming chat (`/chat/completions`, SSE); Stop button or Esc
 - Model list from `GET /models`
 - Markdown + code highlighting; remote images in model output are shown as links, never loaded
-- Reasoning shown collapsed — from vLLM's `reasoning_content`/`reasoning` deltas (`--reasoning-parser`) or inline `<think>` tags
+- Reasoning streams live in a short auto-scrolling box, then collapses to "Thought for Ns" plus its last line. Comes from vLLM's `reasoning`/`reasoning_content` deltas (`--reasoning-parser`) or inline `<think>` tags
+- Output tokens split into thinking and answer (`usage.completion_tokens_details.reasoning_tokens`)
 - TTFT and output tok/s per response (from the server's `usage` when available, otherwise ≈ chunk count)
 - Prefix-cache hit rate and speculative-decoding acceptance per response, from vLLM's `/metrics` counters diffed around the request (only accurate when no other requests run concurrently); `usage.prompt_tokens_details.cached_tokens` is used for the cache rate when the server sends it (`--enable-prompt-tokens-details`)
 - Edit a user message / regenerate a response
 - Image input for vision models: file picker, paste or drag & drop; click any image to view it full size
 - Optional system prompt, temperature, top-p, max tokens — left blank, nothing is sent and the server/chat-template defaults apply
-- Nothing is stored in the browser (no localStorage, cookies or IndexedDB): chats and settings live in memory and a reload resets everything
+- Nothing private is stored: chats and settings live in memory and a reload resets them. The only thing saved is the light/dark choice (localStorage `theme`); no cookies or IndexedDB
 - Thinking-effort slider (`reasoning_effort`). Stops are probed per model via vLLM's `/tokenize` (values the chat template rejects are dropped; the default is detected); other servers get none/low/medium/high
 - Settings in a side panel; changes apply immediately. The system prompt is optional: when empty, no system message is sent
 - Model + thinking chip in the composer; context ring with a usage tooltip
@@ -25,7 +26,7 @@ Everything is in `index.html` (marked, DOMPurify and highlight.js are loaded fro
   - `run_js`: JavaScript in a Worker inside a sandboxed iframe: opaque origin (no access to the page, settings or cookies), CSP blocks all network, 5 s timeout
   - `current_time`
   - Built for small contexts: ≤6K characters per result, earlier turns' tool results dropped, tools withheld once 3/4 of the context is used; up to 6 model calls per answer
-- Light / dark / auto theme
+- Light / dark toggle (follows the system setting until used, then remembered)
 
 ## Running vLLM for it
 
